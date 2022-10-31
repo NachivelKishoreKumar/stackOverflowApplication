@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  stackApp
+
+Resources:
+  Mylayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: Mylayer
+      Description: layer with packages
+      ContentUri: layers/
+      CompatibleRuntimes:
+        - nodejs16.x
+  stackOverflowApp:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Timeout: 100
+      CodeUri: dist/
+      Handler: app.lambdaHandler
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      Layers:
+        - !Ref Mylayer
+      Environment:
+        Variables:
+          host: !Ref host
+          user: !Ref user
+          password: !Ref password
+          database: !Ref database
+          jwt_secret_key: !Ref jwt_secret_key
+      Events:
+        SignUp:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /signUp
+            Method: post
+        Login:
+          Type: Api
+          Properties:
+            Path: /login
+            Method: post
+        AskQuestion:
+          Type: Api
+          Properties:
+            Path: /askQuestion
+            Method: post
+        PostAnswer:
+          Type: Api
+          Properties:
+            Path: /postAnswer
+            Method: post
+        viewSolutions:
+          Type: Api
+          Properties:
+            Path: /viewAllSolutions
+            Method: get
+        viewQuestions:
+          Type: Api
+          Properties:
+            Path: /viewQuestions
+            Method: get
+        viewSolution:
+          Type: Api
+          Properties:
+            Path: /viewSolution
+            Method: get
+        postVote:
+          Type: Api
+          Properties:
+            Path: /postVote
+            Method: post
+        addbookmark:
+          Type: Api
+          Properties:
+            Path: /addBookmark
+            Method: post
+        removebookmark:
+          Type: Api
+          Properties:
+            Path: /removeBookmark
+            Method: post
+        viewbookmark:
+          Type: Api
+          Properties:
+            Path: /viewBookmarked
+            Method: get
+
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        # Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+        EntryPoints: 
+        - app.js
+
+
